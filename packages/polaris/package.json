@@ -1,0 +1,27 @@
+{
+  "name": "@polaris/core",
+  "version": "1.0.0",
+  "description": "AI-powered browser automation library",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "ts-node test/mock-test.ts"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.82.0",
+    "dotenv": "^17.4.1",
+    "openai": "^6.33.0",
+    "playwright": "^1.59.1",
+    "turndown": "^7.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.17",
+    "@types/turndown": "^5.0.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.0"
+  }
+}
