@@ -1,5 +1,8 @@
 import { Job, Queue, Worker } from "bullmq";
-import { redisQueueConnectionOptions, redisWorkerConnectionOptions } from "../lib/connections";
+import {
+  redisQueueConnectionOptions,
+  redisWorkerConnectionOptions,
+} from "../lib/connections";
 import { GuidelineConfigModel } from "../models";
 import { cronRunAutomation } from "../services";
 const QUEUE_NAME = "guideline-cron-automation";

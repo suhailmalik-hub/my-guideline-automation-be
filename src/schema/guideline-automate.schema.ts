@@ -22,8 +22,8 @@ const extractPDFStepSchema = baseStepSchema.extend({
 const extractScreenshotStepSchema = baseStepSchema.extend({
   action: z.literal("extractScreenshot"),
   targetDescription: z.string(),
-  contentFrom: z.string(),
-  contentUpto: z.string(),
+  contentFrom: z.string().optional(),
+  contentUpto: z.string().optional(),
 });
 
 const clickStepSchema = baseStepSchema.extend({

@@ -170,27 +170,35 @@ export async function openNewTab(page: Page, url: string): Promise<Page> {
 }
 
 async function clearBrowserSession(browser: Browser): Promise<void> {
-  for (const context of browser.contexts()) {
-    await context.clearCookies().catch(() => {});
-    for (const page of context.pages()) {
-      await page
-        .evaluate(() => {
+  try {
+    for (const context of browser.contexts()) {
+      await context.clearCookies();
+      for (const page of context.pages()) {
+        await page.evaluate(() => {
           try {
             localStorage.clear();
           } catch (_) {}
           try {
             sessionStorage.clear();
           } catch (_) {}
-        })
-        .catch(() => {});
+        });
+      }
     }
+  } catch (error) {
+    throw new Error(
+      `Failed to clear browser session: ${error instanceof Error ? error.message : error}`,
+    );
   }
 }
 
-// ── Clear session data (best-effort), then always close the browser ───────────
+// ── Combined unit: clear session data then close the browser ─────────────────
 export async function closeBrowser(browser: Browser): Promise<void> {
-  await clearBrowserSession(browser).catch(() => {});
-  await browser.close();
+  try {
+    await clearBrowserSession(browser);
+    await browser.close();
+  } catch (error) {
+    throw new Error(
+      `Failed to close browser: ${error instanceof Error ? error.message : error}`,
+    );
+  }
 }
-
- 

@@ -10,10 +10,11 @@ export interface IScrapeMetaData {
   subVisaType: string;
 }
 
-type aiProvider = "openai";
+type aiProvider = "openai" | "claude";
 export interface IVisawiseConfig {
   aiProvider: aiProvider;
   aiProviderKey: string;
+  aiModel?: string;
 }
 
 export interface IVisawiseInput {

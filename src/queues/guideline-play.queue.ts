@@ -1,5 +1,8 @@
 import { Queue, Worker } from "bullmq";
-import { redisQueueConnectionOptions, redisWorkerConnectionOptions } from "../lib/connections";
+import {
+  redisQueueConnectionOptions,
+  redisWorkerConnectionOptions,
+} from "../lib/connections";
 import { playGuidelineAutomate } from "../services";
 import { PlayGuidelineAutomateRequest } from "../types";
 
@@ -24,7 +27,7 @@ export const guidelinePlayQueueWorker = (): Worker => {
           job.data as unknown as PlayGuidelineAutomateRequest,
         );
       } catch (error) {
-        // do nothing here — error is handled in service and logged, we just want to ensure the job completes so the pointer can move forward
+        // error is handled in service and broadcast via SSE — job completes normally
       }
     },
     {
@@ -52,7 +55,9 @@ export const guidelinePlayQueueWorker = (): Worker => {
     console.error(`[GuidelinePlayWorker] Worker error: ${err.message}`);
   });
 
-  console.log(`[GuidelinePlayWorker] Worker started (concurrency: ${PLAY_QUEUE_CONCURRENCY})`);
+  console.log(
+    `[GuidelinePlayWorker] Worker started (concurrency: ${PLAY_QUEUE_CONCURRENCY})`,
+  );
 
   return worker;
 };

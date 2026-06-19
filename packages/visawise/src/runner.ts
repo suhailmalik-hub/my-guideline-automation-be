@@ -5,6 +5,8 @@ import { runAnalysisAgent, runGenerationAgent, runReviewAgent } from "./agents";
 import { aggregateAnalysisResults } from "./lib/utils";
 import { IGuidelineSource, IScrapeMetaData } from "./types";
 
+type AIProvider = "openai" | "claude";
+
 // ---------- 1. Graph state ----------
 
 // This is the state shared across all nodes in the graph
@@ -45,7 +47,7 @@ export type VisaGuidelineStateType = z.infer<typeof VisaGuidelineState>;
 // ---------- 2. Nodes (units of work) ----------
 
 const analyzeSourcesNode =
-  (apiKey: string) =>
+  (provider: AIProvider, apiKey: string, model?: string) =>
   async (
     state: VisaGuidelineStateType,
   ): Promise<Partial<VisaGuidelineStateType>> => {
@@ -62,7 +64,12 @@ const analyzeSourcesNode =
           sourceContent: source.content,
         };
         console.log("Running analysis agent for", source.stepName);
-        const analysisResult = await runAnalysisAgent({ apiKey, officialData });
+        const analysisResult = await runAnalysisAgent({
+          provider,
+          apiKey,
+          model,
+          officialData,
+        });
         analysisResults.push(analysisResult);
       } catch (error) {
         console.error(`Error processing source ${source.stepName}:`, error);
@@ -98,7 +105,7 @@ const decideModeNode = (
 
 // Node: generation agent
 const generationNode =
-  (apiKey: string) =>
+  (provider: AIProvider, apiKey: string, model?: string) =>
   async (
     state: VisaGuidelineStateType,
   ): Promise<Partial<VisaGuidelineStateType>> => {
@@ -108,7 +115,9 @@ const generationNode =
     }
 
     const result = await runGenerationAgent({
+      provider,
       apiKey,
+      model,
       aggregatedAnalysisResult: state.aggregatedAnalysisResult,
     });
 
@@ -119,9 +128,8 @@ const generationNode =
     return { resultGuideline: result };
   };
 
-// Node: review agent
 const reviewNode =
-  (apiKey: string) =>
+  (provider: AIProvider, apiKey: string, model?: string) =>
   async (
     state: VisaGuidelineStateType,
   ): Promise<Partial<VisaGuidelineStateType>> => {
@@ -131,7 +139,9 @@ const reviewNode =
     }
 
     const result = await runReviewAgent({
+      provider,
       apiKey,
+      model,
       existingGuideline: state.guideline,
       aggregatedAnalysisResult: state.aggregatedAnalysisResult,
     });
@@ -168,13 +178,13 @@ const saveGuidelineNode = async (
 
 // ---------- 3. Build the graph ----------
 
-const buildGraph = (apiKey: string) => {
+const buildGraph = (provider: AIProvider, apiKey: string, model?: string) => {
   const builder = new StateGraph(VisaGuidelineState)
-    .addNode("analyzeSources", analyzeSourcesNode(apiKey))
+    .addNode("analyzeSources", analyzeSourcesNode(provider, apiKey, model))
     .addNode("aggregate", aggregateNode)
     .addNode("decideMode", decideModeNode)
-    .addNode("generation", generationNode(apiKey))
-    .addNode("review", reviewNode(apiKey))
+    .addNode("generation", generationNode(provider, apiKey, model))
+    .addNode("review", reviewNode(provider, apiKey, model))
     .addNode("computeDiff", computeDiffNode)
     .addNode("saveGuideline", saveGuidelineNode);
 
@@ -202,15 +212,18 @@ const buildGraph = (apiKey: string) => {
 // ---------- 4. Public API ----------
 
 export const runVisaGuidelineWorkflow = async (input: {
+  provider: AIProvider;
   apiKey: string;
+  model?: string;
   metaData: IScrapeMetaData;
   sources: IGuidelineSource[];
   existingGuideline: Record<string, any>;
 }) => {
   try {
-    const { apiKey, metaData, sources, existingGuideline } = input;
+    const { provider, apiKey, model, metaData, sources, existingGuideline } =
+      input;
 
-    const graph = buildGraph(apiKey);
+    const graph = buildGraph(provider, apiKey, model);
 
     const resultState = await graph.invoke({
       country: metaData.country,

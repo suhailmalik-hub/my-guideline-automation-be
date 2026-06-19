@@ -1,5 +1,8 @@
 import { Queue, Worker } from "bullmq";
-import { redisQueueConnectionOptions, redisWorkerConnectionOptions } from "../lib/connections";
+import {
+  redisQueueConnectionOptions,
+  redisWorkerConnectionOptions,
+} from "../lib/connections";
 import { runAutomation } from "../services";
 import { RunGuidelineAutomateRequest } from "../types";
 
@@ -20,9 +23,7 @@ export const guidelineRunQueueWorker = (): Worker => {
     QUEUE_NAME,
     async (job) => {
       try {
-        await runAutomation(
-          job.data as unknown as RunGuidelineAutomateRequest,
-        );
+        await runAutomation(job.data as unknown as RunGuidelineAutomateRequest);
       } catch (error) {
         // do nothing here — error is handled in service and logged, we just want to ensure the job completes so the pointer can move forward
       }
@@ -52,7 +53,9 @@ export const guidelineRunQueueWorker = (): Worker => {
     console.error(`[GuidelineRunWorker] Worker error: ${err.message}`);
   });
 
-  console.log(`[GuidelineRunWorker] Worker started (concurrency: ${RUN_QUEUE_CONCURRENCY})`);
+  console.log(
+    `[GuidelineRunWorker] Worker started (concurrency: ${RUN_QUEUE_CONCURRENCY})`,
+  );
 
   return worker;
 };

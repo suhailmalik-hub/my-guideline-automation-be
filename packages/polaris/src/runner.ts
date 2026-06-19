@@ -252,6 +252,7 @@ async function executeAutomationStep(
     // run mode — xpath is pre-resolved; if the element is not found the page structure
     // has changed and retrying the same xpath won't help — throw immediately
     if (mode === "run") {
+      console.log(`  ▶ Running step ${step.order}: ${step.name}`);
       const result = await handler();
       return { result, combinedTree };
     }

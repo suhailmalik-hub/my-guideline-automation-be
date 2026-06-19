@@ -4,7 +4,11 @@ export type AIProvider = "claude" | "openai";
 
 export type OpenAIModel = "gpt-4o" | "gpt-4o-mini";
 
-export type ClaudeModel = "claude-sonnet-4-20250514";
+export type ClaudeModel =
+  | "claude-sonnet-4-20250514"
+  | "claude-sonnet-4-6"
+  | "claude-opus-4-8"
+  | "claude-haiku-4-5";
 
 export type AIModel = OpenAIModel | ClaudeModel;
 
@@ -42,8 +46,8 @@ export interface ExtractPDFStep extends BaseStep {
 export interface ExtractScreenshotStep extends BaseStep {
   action: "extractScreenshot";
   targetDescription: string; // extra instruction passed to the AI (e.g. "focus on bullet points only")
-  contentFrom: string; // visible text marking section start — scroll here before tiling
-  contentUpto: string; // visible text marking section end — stop tiling when this appears
+  contentFrom?: string; // visible text marking section start — scroll here before tiling
+  contentUpto?: string; // visible text marking section end — stop tiling when this appears
 }
 
 export interface ClickStep extends BaseStep {
@@ -133,8 +137,8 @@ export interface PolarisInstanceConfig {
 
 // ── Screenshot extraction hint ─────────────────────────────────────────────
 export interface ScreenshotExtractionHint {
-  contentFrom: string;
-  contentUpto: string;
+  contentFrom?: string;
+  contentUpto?: string;
   filter: string;
 }
 

@@ -110,13 +110,9 @@ export async function extractContentFromScreenshot(
 ): Promise<ScreenshotExtractionResult> {
   const frames = Array.isArray(imageBase64) ? imageBase64 : [imageBase64];
   const multiFrame = frames.length > 1;
-  const prompt = `${
-    multiFrame
-      ? `These are ${frames.length} consecutive viewport screenshots of a webpage, taken by scrolling down. They form a continuous vertical strip of the page.`
-      : "This is a screenshot of a webpage."
-  }
-Step 1 — Extract the scoped content:
-Transcribe the EXACT verbatim text between (and including) the following boundaries:
+  const hasBoundaries = !!(hint.contentFrom && hint.contentUpto);
+  const step1Instructions = hasBoundaries
+    ? `Transcribe the EXACT verbatim text between (and including) the following boundaries:
 - Start boundary: "${hint.contentFrom}"
 - End boundary: "${hint.contentUpto}"
 Rules:
@@ -125,7 +121,21 @@ Rules:
 - Deduplicate content that appears in overlapping regions between frames
 - Do NOT include anything before the start boundary or after the end boundary
 - Preserve structure: use ## for section headings, * for bullet list items
-- If a bullet has sub-items, indent them with two spaces
+- If a bullet has sub-items, indent them with two spaces`
+    : `Transcribe ALL visible text content on the page.
+Rules:
+- Copy text EXACTLY as it appears — do NOT paraphrase, summarise, or invent content
+- Only include text literally visible in the image(s)
+- Deduplicate content that appears in overlapping regions between frames
+- Preserve structure: use ## for section headings, * for bullet list items
+- If a bullet has sub-items, indent them with two spaces`;
+  const prompt = `${
+    multiFrame
+      ? `These are ${frames.length} consecutive viewport screenshots of a webpage, taken by scrolling down. They form a continuous vertical strip of the page.`
+      : "This is a screenshot of a webpage."
+  }
+Step 1 — Extract the scoped content:
+${step1Instructions}
 
 Step 2 — Filter by instruction:
 From the scoped content extracted in Step 1, return ONLY what matches this instruction:

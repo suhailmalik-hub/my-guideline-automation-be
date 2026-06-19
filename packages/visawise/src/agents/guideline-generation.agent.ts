@@ -1,13 +1,17 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { createChatModel } from "../lib/utils";
 import { guidelineGenerationPrompt } from "../prompts";
 import { guidelineGenerationSchema } from "../schemas";
 
+type AIProvider = "openai" | "claude";
+
 export const runGenerationAgent = async (args: {
+  provider: AIProvider;
   apiKey: string;
+  model?: string;
   aggregatedAnalysisResult: any;
 }) => {
-  const { apiKey, aggregatedAnalysisResult } = args;
-  const model = new ChatOpenAI({ model: "gpt-4o", temperature: 0.7, apiKey });
+  const { provider, apiKey, model: modelId, aggregatedAnalysisResult } = args;
+  const model = createChatModel(provider, apiKey, modelId);
 
   const userMessageContent = `
     --- GUIDELINE GENERATION INPUT ---

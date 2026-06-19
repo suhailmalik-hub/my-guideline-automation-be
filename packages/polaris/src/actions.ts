@@ -88,15 +88,42 @@ const TILE_OVERLAP_PX = 50;
 // Safety cap on tile count to prevent runaway loops
 const MAX_TILES = 20;
 
+const DEBUG_DIR = path.join(process.cwd(), "polaris-debug");
+
+function saveDebugJpeg(buf: Buffer, label: string): void {
+  try {
+    fs.mkdirSync(DEBUG_DIR, { recursive: true });
+    const ts = new Date().toISOString().replace(/[:.]/g, "-");
+    const file = path.join(DEBUG_DIR, `${ts}_${label}.jpg`);
+    fs.writeFileSync(file, buf);
+    console.log(`  💾 Debug JPEG saved: ${file}`);
+  } catch (err) {
+    console.error(`  ⚠️ Debug JPEG save failed: ${err instanceof Error ? err.message : err}`);
+  }
+}
+
 export async function takePageScreenshot(
   page: Page,
-  contentFrom: string,
-  contentUpto: string,
+  contentFrom: string | undefined,
+  contentUpto: string | undefined,
 ): Promise<string[]> {
   try {
     const originalViewport = page.viewportSize();
     const viewportWidth = originalViewport?.width ?? 1280;
     const naturalHeight = originalViewport?.height ?? 768;
+    console.log(`  🖥️ Viewport: ${viewportWidth}x${naturalHeight}`);
+
+    // If no boundaries provided, capture just the current viewport as a single frame
+    if (!contentFrom || !contentUpto) {
+      const buf = await page.screenshot({
+        fullPage: false,
+        type: "jpeg",
+        quality: 90,
+      });
+      // saveDebugJpeg(buf, "viewport");
+      console.log(`  📷 Full viewport captured (no contentFrom/contentUpto)`);
+      return [buf.toString("base64")];
+    }
 
     // Resize viewport to READABLE_TILE_HEIGHT so each screenshot = one readable tile
     await page.setViewportSize({
@@ -122,6 +149,7 @@ export async function takePageScreenshot(
         type: "jpeg",
         quality: 90,
       });
+      // saveDebugJpeg(buf, `tile-${i + 1}`);
       console.log(`  📷 Tile ${i + 1} captured`);
       frames.push(buf.toString("base64"));
 

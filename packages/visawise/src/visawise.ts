@@ -6,9 +6,9 @@ export class Visawise {
 
   constructor(config: IVisawiseConfig) {
     try {
-      if (config.aiProvider !== "openai") {
+      if (config.aiProvider !== "openai" && config.aiProvider !== "claude") {
         throw new Error(
-          `Unsupported AI provider: ${config.aiProvider}. Only "openai" is supported.`,
+          `Unsupported AI provider: ${config.aiProvider}. Supported: "openai", "claude".`,
         );
       }
       if (!config.aiProviderKey) {
@@ -25,10 +25,12 @@ export class Visawise {
   async run(input: IVisawiseInput) {
     try {
       return await runVisaGuidelineWorkflow({
+        provider: this._config.aiProvider,
         apiKey: this._config.aiProviderKey,
+        model: this._config.aiModel,
         metaData: input.metaData,
         sources: input.sources,
-        existingGuideline: input.existingGuideline ?? {}, // Pass an empty object if existingGuideline is not provided
+        existingGuideline: input.existingGuideline ?? {},
       });
     } catch (error) {
       throw new Error(
