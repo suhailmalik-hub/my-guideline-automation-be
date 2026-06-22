@@ -32,12 +32,32 @@ function sanitizeXPath(raw: string): string {
     .trim();
 }
 
+function createOpenAIClient(
+  apiKey: string,
+  model: string,
+  azureEndpoint?: string,
+  azureApiVersion?: string,
+): OpenAI {
+  if (azureEndpoint) {
+    return new OpenAI({
+      apiKey,
+      // Azure requires the deployment name in the URL path
+      baseURL: `${azureEndpoint}/openai/deployments/${model}`,
+      defaultQuery: { "api-version": azureApiVersion ?? "2025-01-01-preview" },
+      defaultHeaders: { "api-key": apiKey },
+    });
+  }
+  return new OpenAI({ apiKey });
+}
+
 export async function locateElementXPathWithAI(
   combinedTree: string,
   targetDescription: string,
   provider: AIProvider,
   apiKey: string,
   model: AIModel,
+  azureEndpoint?: string,
+  azureApiVersion?: string,
 ): Promise<XPathResolutionResult> {
   const prompt = `Here is the page structure. Each line has: role "name" xpath=<path>
 Notes:
@@ -52,8 +72,8 @@ Notes:
                   - Return ONLY the xpath string, nothing else`;
 
   try {
-    if (provider === "openai") {
-      const client = new OpenAI({ apiKey });
+    if (provider === "openai" || provider === "azure-openai") {
+      const client = createOpenAIClient(apiKey, model, azureEndpoint, azureApiVersion);
       const response = await client.chat.completions.create({
         model: model,
         max_tokens: 200,
@@ -107,6 +127,8 @@ export async function extractContentFromScreenshot(
   provider: AIProvider,
   apiKey: string,
   model: AIModel,
+  azureEndpoint?: string,
+  azureApiVersion?: string,
 ): Promise<ScreenshotExtractionResult> {
   const frames = Array.isArray(imageBase64) ? imageBase64 : [imageBase64];
   const multiFrame = frames.length > 1;
@@ -144,8 +166,8 @@ From the scoped content extracted in Step 1, return ONLY what matches this instr
 Return only the final filtered text, nothing else.`;
 
   try {
-    if (provider === "openai") {
-      const client = new OpenAI({ apiKey });
+    if (provider === "openai" || provider === "azure-openai") {
+      const client = createOpenAIClient(apiKey, model, azureEndpoint, azureApiVersion);
       const response = await client.chat.completions.create({
         model,
         max_tokens: 2000,

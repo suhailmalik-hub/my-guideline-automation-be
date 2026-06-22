@@ -1,6 +1,6 @@
 // ── Polaris — Type Definitions ────────────────────────────────────────────────
 
-export type AIProvider = "claude" | "openai";
+export type AIProvider = "claude" | "openai" | "azure-openai";
 
 export type OpenAIModel = "gpt-4o" | "gpt-4o-mini";
 
@@ -123,6 +123,8 @@ export interface PolarisAIConfig {
   aiProvider: AIProvider;
   aiProviderApiKey: string;
   aiModel: AIModel;
+  azureEndpoint?: string;   // e.g. https://my-instance.openai.azure.com
+  azureApiVersion?: string; // e.g. 2025-01-01-preview
 }
 
 export interface PolarisOCRConfig {
@@ -212,6 +214,8 @@ export interface PolarisContext {
     provider: AIProvider;
     apiKey: string;
     model: AIModel;
+    azureEndpoint?: string;
+    azureApiVersion?: string;
   };
   ocr?: {
     subscriptionKey: string;

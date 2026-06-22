@@ -32,6 +32,8 @@ export class Polaris {
           provider: this._config.ai.aiProvider,
           apiKey: this._config.ai.aiProviderApiKey,
           model: this._config.ai.aiModel,
+          azureEndpoint: this._config.ai.azureEndpoint,
+          azureApiVersion: this._config.ai.azureApiVersion,
         },
         ocr: this._config.ocr
           ? {

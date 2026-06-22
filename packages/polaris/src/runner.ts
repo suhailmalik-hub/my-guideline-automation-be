@@ -107,6 +107,8 @@ async function resolveXPath({
     context.ai.provider,
     context.ai.apiKey,
     context.ai.model,
+    context.ai.azureEndpoint,
+    context.ai.azureApiVersion,
   );
   return { xpath: resolved.xpath, usage: resolved.usage };
 }
@@ -164,6 +166,8 @@ async function executeAutomationStep(
           context.ai.provider,
           context.ai.apiKey,
           context.ai.model,
+          context.ai.azureEndpoint,
+          context.ai.azureApiVersion,
         );
         return {
           ..._step,
