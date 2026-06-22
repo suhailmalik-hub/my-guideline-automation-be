@@ -2,20 +2,22 @@ import { createChatModel } from "../lib/utils";
 import { guidelineAnalysisPrompt } from "../prompts";
 import { individualFileAnalysisSchema } from "../schemas";
 
-type AIProvider = "openai" | "claude";
+type AIProvider = "openai" | "claude" | "azure-openai";
 
 export const runAnalysisAgent = async (args: {
   provider: AIProvider;
   apiKey: string;
   model?: string;
+  azureEndpoint?: string;
+  azureApiVersion?: string;
   officialData: {
     sourceFileName: string;
     sourceUrl: string;
     sourceContent: string;
   };
 }) => {
-  const { provider, apiKey, model: modelId, officialData } = args;
-  const model = createChatModel(provider, apiKey, modelId);
+  const { provider, apiKey, model: modelId, azureEndpoint, azureApiVersion, officialData } = args;
+  const model = createChatModel(provider, apiKey, modelId, azureEndpoint, azureApiVersion);
 
   const userMessageContent = `
     ### INPUT DATA FOR EXTRACTION

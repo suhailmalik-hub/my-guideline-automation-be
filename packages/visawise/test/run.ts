@@ -172,6 +172,8 @@ const MOCK_POLARIS_OUTPUT = {
 };
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
+const AZURE_OPENAI_API_KEY = process.env.AZURE_OPENAI_API_KEY as string;
+const AZURE_OPENAI_ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT as string;
 import {
   IGuidelineSource,
   IScrapeMetaData,
@@ -213,9 +215,17 @@ const convertPolarisOutput = (
   return { metaData, sources, existingGuideline };
 };
 
+// const automate = new Visawise({
+//   aiProvider: "openai",
+//   aiProviderKey: OPENAI_API_KEY,
+// });
+
 const automate = new Visawise({
-  aiProvider: "openai",
-  aiProviderKey: OPENAI_API_KEY,
+  aiProvider: "azure-openai",
+  aiProviderKey: AZURE_OPENAI_API_KEY,
+  azureEndpoint: AZURE_OPENAI_ENDPOINT,
+  azureApiVersion: "2025-01-01-preview",
+  aiModel: "gpt-4o",
 });
 
 const input = convertPolarisOutput(
@@ -231,8 +241,8 @@ const input = convertPolarisOutput(
 automate
   .run(input)
   .then((result) => {
-    // console.log("Result guideline:");
-    // console.log(JSON.stringify(result, null, 2));
+    console.log("Result guideline:");
+    console.log(JSON.stringify(result, null, 2));
   })
   .catch((error) => {
     console.error("Automation failed:", error);

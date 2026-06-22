@@ -2,12 +2,14 @@ import { createChatModel } from "../lib/utils";
 import { guidelineReviewPrompt } from "../prompts";
 import { guidelineGenerationSchema } from "../schemas";
 
-type AIProvider = "openai" | "claude";
+type AIProvider = "openai" | "claude" | "azure-openai";
 
 export const runReviewAgent = async (args: {
   provider: AIProvider;
   apiKey: string;
   model?: string;
+  azureEndpoint?: string;
+  azureApiVersion?: string;
   existingGuideline: any;
   aggregatedAnalysisResult: any;
 }) => {
@@ -15,10 +17,12 @@ export const runReviewAgent = async (args: {
     provider,
     apiKey,
     model: modelId,
+    azureEndpoint,
+    azureApiVersion,
     existingGuideline,
     aggregatedAnalysisResult,
   } = args;
-  const model = createChatModel(provider, apiKey, modelId);
+  const model = createChatModel(provider, apiKey, modelId, azureEndpoint, azureApiVersion);
 
   const userMessageContent = `
     --- GUIDELINE REVIEW INPUT ---

@@ -2,16 +2,18 @@ import { createChatModel } from "../lib/utils";
 import { guidelineGenerationPrompt } from "../prompts";
 import { guidelineGenerationSchema } from "../schemas";
 
-type AIProvider = "openai" | "claude";
+type AIProvider = "openai" | "claude" | "azure-openai";
 
 export const runGenerationAgent = async (args: {
   provider: AIProvider;
   apiKey: string;
   model?: string;
+  azureEndpoint?: string;
+  azureApiVersion?: string;
   aggregatedAnalysisResult: any;
 }) => {
-  const { provider, apiKey, model: modelId, aggregatedAnalysisResult } = args;
-  const model = createChatModel(provider, apiKey, modelId);
+  const { provider, apiKey, model: modelId, azureEndpoint, azureApiVersion, aggregatedAnalysisResult } = args;
+  const model = createChatModel(provider, apiKey, modelId, azureEndpoint, azureApiVersion);
 
   const userMessageContent = `
     --- GUIDELINE GENERATION INPUT ---

@@ -5,7 +5,7 @@ import { runAnalysisAgent, runGenerationAgent, runReviewAgent } from "./agents";
 import { aggregateAnalysisResults } from "./lib/utils";
 import { IGuidelineSource, IScrapeMetaData } from "./types";
 
-type AIProvider = "openai" | "claude";
+type AIProvider = "openai" | "claude" | "azure-openai";
 
 // ---------- 1. Graph state ----------
 
@@ -47,7 +47,7 @@ export type VisaGuidelineStateType = z.infer<typeof VisaGuidelineState>;
 // ---------- 2. Nodes (units of work) ----------
 
 const analyzeSourcesNode =
-  (provider: AIProvider, apiKey: string, model?: string) =>
+  (provider: AIProvider, apiKey: string, model?: string, azureEndpoint?: string, azureApiVersion?: string) =>
   async (
     state: VisaGuidelineStateType,
   ): Promise<Partial<VisaGuidelineStateType>> => {
@@ -68,6 +68,8 @@ const analyzeSourcesNode =
           provider,
           apiKey,
           model,
+          azureEndpoint,
+          azureApiVersion,
           officialData,
         });
         analysisResults.push(analysisResult);
@@ -105,7 +107,7 @@ const decideModeNode = (
 
 // Node: generation agent
 const generationNode =
-  (provider: AIProvider, apiKey: string, model?: string) =>
+  (provider: AIProvider, apiKey: string, model?: string, azureEndpoint?: string, azureApiVersion?: string) =>
   async (
     state: VisaGuidelineStateType,
   ): Promise<Partial<VisaGuidelineStateType>> => {
@@ -118,6 +120,8 @@ const generationNode =
       provider,
       apiKey,
       model,
+      azureEndpoint,
+      azureApiVersion,
       aggregatedAnalysisResult: state.aggregatedAnalysisResult,
     });
 
@@ -129,7 +133,7 @@ const generationNode =
   };
 
 const reviewNode =
-  (provider: AIProvider, apiKey: string, model?: string) =>
+  (provider: AIProvider, apiKey: string, model?: string, azureEndpoint?: string, azureApiVersion?: string) =>
   async (
     state: VisaGuidelineStateType,
   ): Promise<Partial<VisaGuidelineStateType>> => {
@@ -142,6 +146,8 @@ const reviewNode =
       provider,
       apiKey,
       model,
+      azureEndpoint,
+      azureApiVersion,
       existingGuideline: state.guideline,
       aggregatedAnalysisResult: state.aggregatedAnalysisResult,
     });
@@ -178,13 +184,13 @@ const saveGuidelineNode = async (
 
 // ---------- 3. Build the graph ----------
 
-const buildGraph = (provider: AIProvider, apiKey: string, model?: string) => {
+const buildGraph = (provider: AIProvider, apiKey: string, model?: string, azureEndpoint?: string, azureApiVersion?: string) => {
   const builder = new StateGraph(VisaGuidelineState)
-    .addNode("analyzeSources", analyzeSourcesNode(provider, apiKey, model))
+    .addNode("analyzeSources", analyzeSourcesNode(provider, apiKey, model, azureEndpoint, azureApiVersion))
     .addNode("aggregate", aggregateNode)
     .addNode("decideMode", decideModeNode)
-    .addNode("generation", generationNode(provider, apiKey, model))
-    .addNode("review", reviewNode(provider, apiKey, model))
+    .addNode("generation", generationNode(provider, apiKey, model, azureEndpoint, azureApiVersion))
+    .addNode("review", reviewNode(provider, apiKey, model, azureEndpoint, azureApiVersion))
     .addNode("computeDiff", computeDiffNode)
     .addNode("saveGuideline", saveGuidelineNode);
 
@@ -215,15 +221,17 @@ export const runVisaGuidelineWorkflow = async (input: {
   provider: AIProvider;
   apiKey: string;
   model?: string;
+  azureEndpoint?: string;
+  azureApiVersion?: string;
   metaData: IScrapeMetaData;
   sources: IGuidelineSource[];
   existingGuideline: Record<string, any>;
 }) => {
   try {
-    const { provider, apiKey, model, metaData, sources, existingGuideline } =
+    const { provider, apiKey, model, azureEndpoint, azureApiVersion, metaData, sources, existingGuideline } =
       input;
 
-    const graph = buildGraph(provider, apiKey, model);
+    const graph = buildGraph(provider, apiKey, model, azureEndpoint, azureApiVersion);
 
     const resultState = await graph.invoke({
       country: metaData.country,

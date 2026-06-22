@@ -10,11 +10,13 @@ export interface IScrapeMetaData {
   subVisaType: string;
 }
 
-type aiProvider = "openai" | "claude";
+type aiProvider = "openai" | "claude" | "azure-openai";
 export interface IVisawiseConfig {
   aiProvider: aiProvider;
   aiProviderKey: string;
   aiModel?: string;
+  azureEndpoint?: string;   // e.g. https://nuron-sandbox-openai.openai.azure.com
+  azureApiVersion?: string; // e.g. 2025-01-01-preview
 }
 
 export interface IVisawiseInput {

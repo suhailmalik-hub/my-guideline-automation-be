@@ -6,10 +6,13 @@ export class Visawise {
 
   constructor(config: IVisawiseConfig) {
     try {
-      if (config.aiProvider !== "openai" && config.aiProvider !== "claude") {
+      if (config.aiProvider !== "openai" && config.aiProvider !== "claude" && config.aiProvider !== "azure-openai") {
         throw new Error(
-          `Unsupported AI provider: ${config.aiProvider}. Supported: "openai", "claude".`,
+          `Unsupported AI provider: ${config.aiProvider}. Supported: "openai", "claude", "azure-openai".`,
         );
+      }
+      if (config.aiProvider === "azure-openai" && !config.azureEndpoint) {
+        throw new Error(`azureEndpoint is required when aiProvider is "azure-openai".`);
       }
       if (!config.aiProviderKey) {
         throw new Error("aiProviderKey is required.");
@@ -28,6 +31,8 @@ export class Visawise {
         provider: this._config.aiProvider,
         apiKey: this._config.aiProviderKey,
         model: this._config.aiModel,
+        azureEndpoint: this._config.azureEndpoint,
+        azureApiVersion: this._config.azureApiVersion,
         metaData: input.metaData,
         sources: input.sources,
         existingGuideline: input.existingGuideline ?? {},
