@@ -33,10 +33,10 @@ const DocumentSchema = z.object({
 const VisaDocumentsGuidelineSchema = z.object({
   docCategory: z.string(),
   documents: z.array(DocumentSchema),
-  notes: z.array(z.string()),
-  links: z.array(z.string()),
-  mandatory: z.boolean(),
-  conditions: z.array(z.string()),
+  notes: z.array(z.string()).catch([]),
+  links: z.array(z.string()).catch([]),
+  mandatory: z.boolean().catch(false),
+  conditions: z.array(z.string()).catch([]),
 });
 
 export const guidelineGenerationSchema = z.object({
